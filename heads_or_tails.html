@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+
+	<style>
+		canvas {
+            border: solid 1px black;
+			margin-left: auto;
+            margin-right: auto;
+		}
+	</style>
+
+</head>
+<body>
+<script>
+// Load Google Font:
+function load_google_font(){
+	game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+}
+
+// Hover v0.1
+// Hover a sprite using tweens
+// Tweens up and down in a range with a time infinitely.
+tweenCount = 0;
+tween = [];
+function hover_sprite(key,distance,time) {
+	tween[tweenCount] = game.add.tween(key).to( { y: key.y - distance }, time, Phaser.Easing.Out, true)
+		.to( { y: key.y + distance }, time, Phaser.Easing.Out).loop();
+	tweenCount++;
+}
+
+function hover_sprite_v(key,distance,time) {
+	tween[tweenCount] = game.add.tween(key).to( { x: key.x - distance }, time, Phaser.Easing.Out, true)
+		.to( { x: key.x + distance }, time, Phaser.Easing.Out).loop();
+	tweenCount++;
+}
+
+function kill_hover(i) {
+	tween[i].pause();
+}
+
+// Game Begin
+
+var gameWidth = 800;
+var gameHeight = 500;
+
+var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'Heads or Tales', { preload: preload, create: create, update: update });
+
+function preload() {
+	load_google_font();
+}
+
+function create() {
+
+	function draw_rect() {
+	    // Draw A Rectangle
+		var rect = game.add.graphics(0, 0);
+		rect.beginFill(0x116611, 1);
+		rect.drawRect(0, 0 , gameWidth, gameHeight);
+		rect.visible = false;
+
+		// Add sprite and make it clickable
+		bottomHalf = game.add.sprite(-10, gameHeight / 2 - 10,rect.generateTexture());
+		bottomHalf.addChild(rect);
+		bottomHalf.inputEnabled = true;
+		bottomHalf.input.useHandCursor = true;
+		bottomHalf.events.onInputDown.add(function(){ click_side(); }, this);
+		hover_sprite(bottomHalf,40,750);
+	}
+
+	function click_side() {
+        // Kill hover immediately when rectangle clicked
+        kill_hover(0);
+        var rectx = gameWidth / 2 - 10;
+        var recty = 0 - 10;
+        var bottomTextX = gameWidth * 0.75 - (bottomText.width);
+        var bottomTextY = gameHeight / 2;
+        var topTextX = gameWidth * 0.25 - topText.width / 2;
+        var topTextY = gameHeight / 2;
+
+        // Tween rectangle.
+        game.add.tween(bottomHalf).to( { x: rectx, y: recty}, 200, Phaser.Easing.Out, true)
+
+        // Tween text to a new place quickly
+        game.add.tween(bottomText).to( { x: bottomTextX, y: bottomTextY}, 200, Phaser.Easing.Out, true)
+
+        // Tween text to a new place quickly
+        game.add.tween(topText).to( { x: topTextX, y: topTextY }, 200, Phaser.Easing.Out, true);
+
+        setTimeout(function(){ hover_sprite_v(bottomHalf,40,750); }, 200);
+		bottomHalf.events.onInputDown.add(function(){ click_side(); }, this);
+	}
+
+	function print_top_centered(s) {
+			topText = game.add.text( 0, 0, s, { fill: "#116611" });
+			topText.x = (gameWidth - topText.width) / 2;
+			topText.y = (gameHeight - topText.height) / 4;
+			topText.font = 'Impact';
+	}
+
+    // Todo:  Extends above
+	function print_bottom_centered(s) {
+			bottomText = game.add.text( 0, 0, s, { fill: "#ffffff" });
+			bottomText.x = (gameWidth - bottomText.width) / 2;
+			bottomText.y = (gameHeight - bottomText.height) / 1.25;
+			bottomText.font = 'Impact';
+            console.log("hello");
+	}
+
+    game.stage.backgroundColor = 0xffffff;
+    print_top_centered("Heads?");
+	draw_rect();
+    print_bottom_centered("Tails?");
+
+}
+
+function update() {
+
+}
+</script>
