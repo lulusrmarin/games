@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+<script>
+function draw_circle_full(color,x,y,rad) {
+	var circle = game.add.graphics(0, 0);
+	circle = circle.beginFill(color, 1);
+    circle = circle.drawCircle(x, y, rad);
+	return circle;
+}
+
+// Move the character left or right
+function check_horizontal() {
+    if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
+        circleSprite.body.velocity.x = -speed;
+    }
+	else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
+        circleSprite.body.velocity.x = speed;
+	}
+	else {
+		circleSprite.body.velocity.x = 0;
+	}
+}
+
+// Move the character up or down
+function check_vertical() {
+	if (game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+        circleSprite.body.velocity.y = -speed;
+	}
+	else if (game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+        circleSprite.body.velocity.y = speed;
+	}
+	else {
+		circleSprite.body.velocity.y = 0;
+	}
+}
+
+// Game Begin
+
+var gameWidth = 800;
+var gameHeight = 500;
+
+var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'top-down-demo', { preload: preload, create: create, update: update });
+
+function preload() {
+    game.load.image("bg","images/bg.png");
+}
+
+function create() {
+	game.stage.backgroundColor = "000000";
+	game.add.text(32, 32, 'An Empty Game ;)', { fill: 'white' });
+
+    bg = game.add.sprite(0,0,'bg');
+
+    circle = draw_circle_full(0xffffff,0,0,30);
+    circle.visible = false;
+    circleSprite = game.add.sprite(gameWidth / 2 - 30, gameHeight / 2 - 30,circle.generateTexture());
+    game.physics.enable(circleSprite);
+}
+
+var speed = 100;
+function update() {
+    check_horizontal();
+    check_vertical();
+
+}
+</script>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/phaser.min.js"></script>
+
+<style>
+	canvas {
+		margin-left: auto;
+		margin-right: auto;
+	}
+</style>
+
+</head>
+<body>
+<script>
+// M Lib
+// Marin Library for Creating Games Using Phaser
+// Print A centered Sprite using a key value.
+function print_centered_sprite(key,xOffset = 0,yOffset = 0,scale = 1) {
+	key = game.add.sprite(0,0,key,0); // Draw the sprite at x:0, y:0
+	key.visible = false; // But then quickly make it invisible
+	key.scale.setTo(1,1); // Scale the sprite ideally before doing math with this object's values.
+	key.x = ((gameWidth - key.width) / 2) + xOffset; // Set the key X to exact center
+		// Using a formula from the width of the game and width of the object.
+	key.y = ((gameHeight - key.height) / 2) + yOffset; // Ditto for Y
+	key.visible = true; // Make the key now visible
+	// console.log(key);
+	return key;
+}
+
+// Hover a sprite using tweens
+// Tweens up and down in a range with a time infinitely.
+function hover_sprite(key,distance,time) {
+
+	tween = game.add.tween(key).to( { y: key.y - distance }, time, Phaser.Easing.Out, true)
+		.to( { y: key.y + distance }, time, Phaser.Easing.Out).loop();
+}
+
+// Load Marin Games Splash Assets
+function load_splash_screen() {
+	// Splash screen load
+	game.load.image("logoGhost","mlib/logo-ghost.png");
+	game.load.image("logoWords","mlib/logo-words.png");
+	game.load.audio("splash","sounds/splash.wav");
+}
+
+// Marin splash screen.
+// Currently consists of one simple color and printing the logo centered.
+function print_marin_splash_screen(splashTime) {
+	game.stage.backgroundColor = "EB5FA1"; // BG color
+
+	logoGhost = print_centered_sprite('logoGhost',0,-20);	// Logo Ghost
+	logoWords = print_centered_sprite('logoWords',0,100);	// Logo Words
+
+	hover_sprite(logoGhost,15,1000); // Call the Hover Sprite function and hover just the ghost.
+	splash = game.add.audio('splash');
+	//splash.play();
+
+	setTimeout(function(){logoWords.destroy(); logoGhost.destroy(); }, splashTime);
+}
+
+// Draw a text window
+function draw_window(x,y,scale,message) {
+	margin = 10; //
+	var window = game.add.sprite(x,y,"window");
+	window.scale.setTo(scale,scale);
+	//window.anchor.setTo(0.5,0.5);
+	text = game.add.text(window.x + margin, window.y + margin, message, { fill: 'white' });
+	text.scale.setTo(scale,scale);
+	carrot = game.add.sprite(x + window.width - margin - 20, y + window.height - margin + 5,"carrot");
+	hover_sprite(carrot,2,1000);
+}
+
+function setBgColor(color) {
+	game.stage.backgroundColor = color;
+}
+
+
+// Circle start
+function circle_start() {
+	player = game.add.sprite(gameWidth / 2,gameHeight - 60,'circle',0);
+	game.physics.enable(player);
+	player.body.collideWorldBounds = true;
+}
+
+// Draw Square
+function draw_square(x,y,speed,scale,color) {
+	square[squareCount] = game.add.sprite(x,y,'square',0);
+	square[squareCount].scale.setTo(scale,scale);
+	game.physics.enable(square[squareCount]);
+	square[squareCount].body.velocity.y = speed;
+	square[squareCount].tint = color;
+	squareCount++;
+
+	return square;
+}
+
+function draw_rainDrop(x,y,speed,scale) {
+	drop[dropCount] = game.add.sprite(x,y,'square',0);
+	drop[dropCount].scale.setTo(0.07 * scale,scale * 2.3);
+	game.physics.enable(drop[dropCount]);
+	drop[dropCount].body.velocity.y = speed;
+	drop[dropCount].tint = 0xBBBBBB;
+	dropCount++;
+
+	return drop;
+}
+
+// Draw a random square
+function draw_random_square() {
+	x = game.rnd.integerInRange(0, gameWidth);
+	y = 50;
+	speed = game.rnd.integerInRange(60, 200);
+	size = game.rnd.frac();
+	color = random_hex();
+	draw_square(x,y,speed,size,color);
+}
+
+// Extends? random square
+function snow() {
+	x = game.rnd.integerInRange(0 -50, gameWidth);
+	y = 0 - 50;
+	speed = game.rnd.integerInRange(60, 200);
+	size = game.rnd.frac();
+	//color = random_hex();
+	draw_square(x,y,speed,size * 1.2,0xffffff);
+}
+
+// Extends random square?
+function rain() {
+	x = game.rnd.integerInRange(0 -50, gameWidth);
+	y = 0 - 50;
+	speed = game.rnd.integerInRange(500,800);
+	size = game.rnd.frac();
+	//color = random_hex();
+	draw_rainDrop(x,y,speed,size);
+}
+
+// Draw several random squares.
+// This can also be done by looping in the update field.
+function draw_random_squares(i = 0) {
+	delay = 1000;
+	while(i < 50) {
+		setTimeout(function(){ draw_random_square(); }, delay * i);
+		i++;
+	}
+}
+
+function random_hex() {
+	hex = "0x" + (Math.random() * 0xFFFFFF << 0).toString(16);
+	return hex;
+}
+
+// Start game features
+function start_game() {
+	setBgColor("1c75ae");
+	game.physics.startSystem(Phaser.Physics.ARCADE);
+	circle_start();
+}
+
+function kill_square(square) {
+	square.destroy();
+}
+
+function kill_squares(squareR) {
+	squareR.forEach(
+		function(square) {
+			if(square.y > gameHeight) {
+				kill_square(square);
+			}
+		}
+	);
+}
+
+// Game Begin
+
+
+var gameWidth = 340;
+var gameHeight = 500;
+var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
+
+var player;
+var speed = 600;
+var squareCount = 0;
+var square = [];
+var dropCount = 0;
+var drop = [];
+
+function preload() {
+	load_splash_screen();
+	game.load.image("window","images/window.png");
+	game.load.image("carrot","images/carrot.png");
+	game.load.image("circle","images/circle.png");
+	game.load.image("square","images/square.png");
+}
+
+var debug = true;
+function create() {
+	var splashTime = 3500;
+
+	if(debug == false) {
+		print_marin_splash_screen(splashTime);
+		setTimeout(function(){ start_game(); }, splashTime);
+	}
+	else (start_game()) ;
+}
+
+function update() {
+	if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
+        player.body.velocity.x = -speed;
+    }
+	else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
+        player.body.velocity.x = speed;
+	}
+	else {
+		player.body.velocity.x = 0;
+	}
+
+	snow();
+	snow();
+	kill_squares(square);
+}
+</script>
+</body>
+</html>

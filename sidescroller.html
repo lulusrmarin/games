@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+<script>
+function draw_circle_full(color,x,y,rad) {
+	var circle = game.add.graphics(0, 0);
+	circle = circle.beginFill(color, 1);
+    circle = circle.drawCircle(x, y, rad);
+	return circle;
+}
+
+// Move the character left or right
+var scrollSpeed = 0.1;
+function check_horizontal() {
+    if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
+        chara.scale.x = -1;
+        chara.body.velocity.x = -speed;
+        if(game.camera.x < gameWidth * 3 && game.camera.x > 0) {
+            bg2.body.velocity.x = speed * scrollSpeed;
+            bg3.body.velocity.x = speed * scrollSpeed / 2;
+        }
+    }
+	else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
+        chara.scale.x = 1;
+        chara.body.velocity.x = speed;
+        if(game.camera.x < gameWidth * 3 && game.camera.x > 0) {
+            bg2.body.velocity.x = speed * -scrollSpeed;
+            bg3.body.velocity.x = speed * -scrollSpeed / 2;
+        }
+	}
+	else {
+		chara.body.velocity.x = 0;
+        bg2.body.velocity.x = 0;
+        bg3.body.velocity.x = 0;
+	}
+}
+
+// Move the character up or down
+function check_vertical() {
+	if (game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+        chara.body.velocity.y = -speed;
+	}
+	else if (game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+        chara.body.velocity.y = speed;
+	}
+	else {
+		chara.body.velocity.y = 0;
+	}
+}
+
+function check_jump() {
+	if (game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+        chara.body.velocity.y = -200;
+        chara.loadTexture('chara-jump', 0);
+        chara.animations.add('chara-jump');
+        chara.animations.play('chara-jump', 10, true);
+
+        setTimeout(function(){
+            game.input.keyboard.removeKey(Phaser.Keyboard.UP)
+            chara.loadTexture('chara');
+            chara.animations.add('walk');
+            chara.animations.play('walk', 10, true);
+        }, 200);
+	}
+	else {
+		//chara.body.velocity.y = 200;
+	}
+}
+
+var graphic = [];
+var gCount = 0;
+// Ad a sprite at 0,0
+function add_sprite_origin(key) {
+    graphic[gCount] = game.add.sprite(0,0,key);
+    return graphic[gCount];
+    gCount++;
+}
+
+function set_bg_color(color) {
+   game.stage.backgroundColor = color;
+}
+
+function initialize_game(x,y,name) {
+    var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, name, { preload: preload, create: create, update: update });
+    return game;
+}
+
+// Draw a filled rectangle
+var rectangle = [];
+var rectCount = 0;
+function draw_fill_rect(startX,startY,finishX,finishY,color) {
+    rectangle[rectCount] = game.add.graphics(startX, startY); // Add empty graphics at origin
+    rectangle[rectCount].beginFill(color, 1); // Fill with called color at Full alpha
+    rectangle[rectCount].drawRect(startX, startY, finishX, finishY); // Draw rectangle at provided points
+    return rectangle[rectCount]; // Return rectangle object
+    rectCount++;
+}
+
+var spriteShape = []
+var spriteShapeCount = 0;
+// Create a sprite from a shape
+function sprite_shape(shape,x,y) {
+
+    spriteShape[spriteShapeCount] = game.add.sprite(x , y , shape.generateTexture());
+    // Create a sprite from shape using .generateTexture() method
+
+    // Close it out, create a spriteShape list item
+    // Also return an object from that list
+    // Increment object count
+    return spriteShape[spriteShapeCount];
+    spriteShapeCount++;
+}
+
+// Game Begin
+var gameWidth = 800;
+var gameHeight = 500;
+var game = initialize_game(gameWidth,gameHeight,'side-scroller-demo');
+
+function preload() {
+    game.load.image("bg","images/background.png");
+    game.load.image('tile', 'images/tile_aqua.png');
+    game.load.image('city', 'images/city.png');
+    game.load.image('trees', 'images/trees.png');
+    game.load.spritesheet('chara', 'images/walk.png', 64, 64);
+}
+
+var chara;
+var floor;
+function create() {
+	set_bg_color("162436"); // Set bgcolor
+
+    // Render bg items
+    background = game.add.tileSprite(0 , 75, gameWidth * 4, gameHeight, 'bg');
+    background.scale.setTo(3,3);
+    bg3 = game.add.tileSprite(0 , 280, gameWidth * 5, gameHeight, 'trees');
+    bg2 = game.add.tileSprite(0 , 320, gameWidth * 5, gameHeight, 'city');
+
+
+    floorHeight = 50;
+    floor = game.add.tileSprite(0 , gameHeight - floorHeight, gameWidth * 4, gameHeight , 'tile');
+    //console.log(floor);
+
+    // Start physics
+    //  Set the world (global) gravity
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.physics.arcade.gravity.y = 1000;
+    game.world.setBounds(0,0,gameWidth * 4,gameHeight);
+
+    // Start character animation
+    chara = game.add.sprite(20, gameHeight - 200, 'chara', 4);
+    anim = chara.animations.add('walk');
+    anim.play(10, true);
+
+    // Enable physics on the following sprites:
+    game.physics.enable([chara,floor,bg2,bg3]);
+    // Create the rectangle Sprite as a floor, make it immovable
+    bg2.body.allowGravity = false;
+    bg3.body.allowGravity = false;
+    floor.body.setSize(floor.width ,floor.height);
+    floor.body.immovable = true;
+    floor.body.allowGravity = false;
+
+    // Create physics events on character
+    chara.body.collideWorldBounds = true;
+    chara.anchor.setTo(0.5,1);
+
+    // Camera follow
+    game.camera.follow(chara);
+}
+
+var speed = 200;
+function update() {
+    game.physics.arcade.collide(chara, floor);
+
+    check_horizontal();
+    check_jump();
+
+    game.debug.body(chara);
+    game.debug.body(floor);
+    game.debug.cameraInfo(game.camera, 32, 32);
+}
+</script>
