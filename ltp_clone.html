@@ -32,6 +32,7 @@ function draw_player() {
     // Create a sprite
     player = game.add.sprite(400,400,'link-walk-up',8);
     player.scale.setTo(3,3);
+    player.anchor.setTo(0.5,1);
     // Initialize physics of player
     game.physics.enable(player);
     // Return player object/sprite
@@ -264,6 +265,7 @@ function animate_direction() {
 
 function preload() {
     game.load.image('tile', 'images/tile_aqua.png');
+    game.load.image('brick', 'images/brick.png');
 	game.load.spritesheet('link-walk-up', 'images/link-walk-up.png', 17, 24);
     game.load.spritesheet('link-walk-down', 'images/link-walk-down.png', 17, 24);
     game.load.spritesheet('link-walk-profile', 'images/link-walk-profile.png', 24, 24);
@@ -271,6 +273,7 @@ function preload() {
 
 function create() {
 	game.stage.backgroundColor = "000000";
+    bg = game.add.tileSprite(0, 0, gameWidth * 4, gameHeight * 4, 'brick');
     game.world.setBounds(0,0,gameWidth * 4,gameHeight * 4);
 	//game.add.text(32, 32, 'An Empty Game ;)', { fill: 'white' });
 
