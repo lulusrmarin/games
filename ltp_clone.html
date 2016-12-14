@@ -263,9 +263,19 @@ function animate_direction() {
     held_directions();
 }
 
+// Iterate through tiles
+var tileNum = 0;
+function rotate_tiles() {
+    setTimeout(function(){     // Testing tiles
+        test = game.add.sprite(300,300,'tile-art',tileNum);
+        tileNum++;
+    },1000);
+}
+
 function preload() {
     game.load.image('tile', 'images/tile_aqua.png');
     game.load.image('brick', 'images/brick.png');
+    game.load.spritesheet('tile-art', 'images/hyptosis_tile-art-batch-3.png', 32, 32);
 	game.load.spritesheet('link-walk-up', 'images/link-walk-up.png', 17, 24);
     game.load.spritesheet('link-walk-down', 'images/link-walk-down.png', 17, 24);
     game.load.spritesheet('link-walk-profile', 'images/link-walk-profile.png', 24, 24);
@@ -277,9 +287,13 @@ function create() {
     game.world.setBounds(0,0,gameWidth * 4,gameHeight * 4);
 	//game.add.text(32, 32, 'An Empty Game ;)', { fill: 'white' });
 
+    // Initialize game elements
     draw_player();
     draw_enemy(100,100);
     draw_wall();
+
+    // Testing tiles
+    test = game.add.sprite(300,300,'tile-art',tileNum);
 
     // Enable physics on character
     game.physics.enable(player);
@@ -299,6 +313,9 @@ function update() {
     //check_face_direction(); // Check the debug face direction
     check_enemy_overlap();  // Check if sword overlaps with enemy
     animate_direction(); // Animate directions only when directions are held
+
+    // testing this function
+    rotate_tiles();
 
     //collision
     game.physics.arcade.collide(player, wallSprite);
