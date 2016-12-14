@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+<script>
+// Robert Marin
+// Topdown action adventure demo v0.1
+
+// Game Begin
+var gameWidth = 800;    // Width of game
+var gameHeight = 500;   // Height of game
+// New Game
+var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'Top Down', { preload: preload, create: create, update: update });
+
+// Draw and return a rectangle object
+// Done too often to not be  function
+function draw_rect(posX = 0,posY = 0, color = 0xFFFFFF, width = 50, height = 50, visible = false) {
+    var rect = game.add.graphics(posX, posY); // New shape object
+    rect.beginFill(color, 1); // Fill in object
+    rect.drawRect(posX, posY , width, height); // Create at positions x and y and draw to width/height
+    rect.visible = visible; // Visible or not, often created invisible to draw texture to sprite
+        // Prevents drawing twice, in other words
+    return rect; // Return the shape as an object
+}
+
+// Draw Player character
+function draw_player() {
+    // Draw A Rectangle
+    var playerRect = draw_rect();
+    // Create a sprite
+    player = game.add.sprite(400,400,'link-walk-up',8);
+    player.scale.setTo(3,3);
+    // Initialize physics of player
+    game.physics.enable(player);
+    // Return player object/sprite
+    return player;
+}
+
+// Draw a direction for debugging purposes.  Ideally won't be needed with a character sprite
+function draw_face() {
+    // Draw A Rectangle
+    var faceRect = draw_rect(0,0,0x0000FF,50,10,false);
+    // Create a sprite
+    faceSprite = game.add.sprite(player.x, player.y,faceRect.generateTexture());
+    // Initialize physics of player
+    game.physics.enable(faceSprite);
+    // Return debug direction sprite
+    return faceSprite;
+}
+
+// Move the player up or down
+var facing = "up";  // Default direction to be facing.
+var movementSpeed = 250;    // Default movement speed
+function check_vertical() {
+    speed = movementSpeed;  // Speed is set again to allow for changing
+	if (game.input.keyboard.isDown(Phaser.Keyboard.UP)) {  // If keyboard up is pressed
+        player.body.velocity.y = -speed; // Upward velocity set to speed
+        facing = "up"; // Set "facing" direction to up"
+	}
+	else if (game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {   //If keyboard down is pressed
+        player.body.velocity.y = speed; // Downward velocity is set at a constant
+        facing = "down";    // Direction traveling is set to down
+	}
+	else {
+		player.body.velocity.y = 0; // Otherwise nothing happens
+	}
+}
+
+// Move the player left or right
+// Why is this two functions?  Breaking this into two distinct checks
+//  Allows for diagonal movement.  In a sense it is "easier" to follow this way
+function check_horizontal() {
+    speed = movementSpeed; // Set in case I want to change this for debugging purposes etc...
+	if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {    // If left is pressed
+        player.body.velocity.x = -speed;    // Constant left velocity is set
+        facing = "left";    // Set to facing left
+	}
+	else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {  // If right is pressed
+        player.body.velocity.x = speed;     //Constant right veolicty is set
+        facing = "right";   // Set to facing right
+	}
+	else {
+		player.body.velocity.x = 0; // Otherwise nothing happens
+	}
+}
+
+// Swing sword function
+function swing_sword(startX,startY,endX,endY,anchorX,anchorY,startRot,endRot) {
+    var swordRect = draw_rect(0,0,0xFF0000, 10, 50, false); // Create shape for sword
+    // Create a sprite
+    swordSprite = game.add.sprite(startX, startY,swordRect.generateTexture()); // Generate texture from shape
+    swordSprite.anchor.setTo(anchorX,anchorY); // Set the anchor from the parameters
+    swordSprite.rotation = startRot; // Set rotation from parameters
+    // Enable physics for overlap Checking
+    //game.physics.enable(swordSprite); // Enable physics on sprite
+    swordTween = game.add.tween(swordSprite).to( { rotation: endRot, x: endX, y: endY }, swingSpeed, Phaser.Easing.Out, true); // Tween the sprite from one place to another
+    swordTween.onComplete.add(function(){
+        swordSprite.destroy(); // Kill the sprite after swinging finishes
+        swingEnable = true; // Enable drawing the tween/sprite again.
+    } );
+}
+
+// Check to swing sword
+//  Enabled by default.
+//   This changes to allow sword swinging animation to complete before taking input again
+var swingEnable = true;
+function check_sword() {
+	if (game.input.keyboard.isDown(Phaser.Keyboard.Z) && swingEnable == true) {
+        // If 'Z' on keyboard is pressed AND enabled is set to true
+        swingEnable = false; // Immediately disable when swung
+        //game.add.text(32, 32, 'Sword Swung', { fill: 'white' });
+        swingSpeed = 100; // Swing speed
+        if(facing == "up") {
+            // Swing sword with these parameters:
+            swing_sword(player.x + 15, player.y + 35,player.x + 65,player.y + 35,0.5,1,-0.5,0.5);
+        }
+        if(facing == "down") {
+            // Swing sword with these parameters:
+            swing_sword(player.x + 65, player.y + 50,player.x,player.y + 50,0.5,0,-0.25,0.75);
+        }
+        if(facing == "right") {
+            // Swing sword with these parameters:
+            swing_sword(player.x + 50, player.y + 15,player.x + 50,player.y + 65,0.5,1,0.75,2.25);
+        }
+        if(facing == "left") {
+            // Swing sword with these parameters:
+            swing_sword(player.x, player.y + 15,player.x,player.y + 65,0.5,1,-0.75,-2.25);
+        }
+	}
+}
+
+// Draw the direction of the face shape/sprite
+function draw_face_direction(posX,posY,color = 0x0000FF,width,height,visible = false) {
+    drawSwitch = true;
+    faceRect = draw_rect(posX,posY,color,width,height,visible);
+    faceRect.drawRect(0,0,width,height);
+    faceRect.visible = true;
+    setTimeout(function(){
+        drawSwitch = false;
+        faceRect.destroy();
+    }, 01);
+}
+
+function check_face_direction() {
+    //console.log("Facing: " + facing);
+    // Draw A Rectangle
+    drawSwitch = false;
+    // To do in case of "up" direction
+    if(facing == "up" && drawSwitch == false) {
+        // Draw face direction with following parameters
+        draw_face_direction(player.x + 10, player.y + 10,0x0000FF,50,10);
+    }
+    // To do in case of "down" direction
+    if(facing == "down" && drawSwitch == false) {
+        // Draw face direction with following parameters
+        draw_face_direction(player.x + 10, player.y + 50,0x0000FF,50,10);
+    }
+    // To do in case of "left" direction
+    if(facing == "left" && drawSwitch == false) {
+        // Draw face direction with following parameters
+        draw_face_direction(player.x + 10, player.y + 10,0x0000FF,10,50);
+    }
+    // To do in case of "right" direction
+    if(facing == "right" && drawSwitch == false) {
+        // Draw face direction with following parameters
+        draw_face_direction(player.x + 50, player.y + 10,0x0000FF,10,50);
+    }
+}
+
+var enemy = [];
+var enemyCount = 0;
+function draw_enemy(x,y) {
+    // Create a square Shape/Hitbox
+    var enemyShape = game.add.graphics(0, 0);
+    enemyShape.beginFill(0x00FF00, 1);
+    enemyShape.drawRect(0, 0 , 50, 50);
+    enemyShape.visible = false;
+    // Create Sprite for physics/collision etc.
+	enemy[enemyCount] = game.add.sprite(x,y,enemyShape.generateTexture());
+	//square[squareCount].scale.setTo(scale,scale);
+	enemyCount++;
+	return enemy;
+}
+
+function check_enemy_overlap() {
+    if(typeof swordSprite !== 'undefined') {
+        swordBounds = swordSprite.getBounds();
+        enemyBounds = enemy[0].getBounds();
+        if(Phaser.Rectangle.intersects(swordBounds,enemyBounds) == true) { enemy[0].destroy(); }
+        //game.physics.arcade.overlap(swordSprite,enemy[0],function(){ enemy[0].destroy(); });
+        //game.debug.body(swordSprite);
+    }
+}
+
+function draw_wall() {
+    //wallRect = draw_rect(0,0,0xFFFF00,400,400);
+    wallSprite = game.add.tileSprite(0,0,game.world.bounds.width,10,'tile');
+    game.physics.enable(wallSprite);
+    wallSprite.body.immovable = true;
+    //wallSprite.body.setSize = (wallSprite.width, wallSprite.height);
+
+    wallSprite2 = game.add.tileSprite(0,500,game.world.bounds.width,10,'tile');
+    game.physics.enable(wallSprite2);
+    wallSprite2.body.immovable = true;
+    //wallSprite2.body.setSize = (wallSprite.width, wallSprite.height);
+}
+
+var upEnable = true;
+var downEnable = true;
+var leftEnable = true;
+var rightEnable = true;
+function held_directions() {
+    if(game.input.keyboard.isDown(Phaser.Keyboard.UP) != true) {
+        upEnable = true;
+    }
+    if(game.input.keyboard.isDown(Phaser.Keyboard.DOWN) != true) {
+        downEnable = true;
+    }
+    if(game.input.keyboard.isDown(Phaser.Keyboard.RIGHT) != true) {
+        rightEnable = true;
+    }
+    if(game.input.keyboard.isDown(Phaser.Keyboard.LEFT) != true) {
+        leftEnable = true;
+    }
+}
+
+function animate_direction() {
+    if(facing == "up" && upEnable == true) {
+        //console.log("up");
+        upEnable = false;
+        player.loadTexture('link-walk-up',8);
+        anim = player.animations.add('walk');
+        anim.play(10,true);
+    }
+    if(facing == "down" && downEnable == true) {
+        //console.log("down");
+        downEnable = false;
+        player.loadTexture('link-walk-down',8);
+        anim = player.animations.add('walk');
+        anim.play(10,true);
+    }
+    if(facing == "left" && leftEnable == true) {
+        //console.log("left");
+        leftEnable = false;
+        player.loadTexture('link-walk-profile',8);
+        player.scale.x = 3;
+        anim = player.animations.add('walk');
+        anim.play(10,true);
+    }
+    if(facing == "right" && rightEnable == true) {
+        //console.log("right");
+        rightEnable = false;
+        player.loadTexture('link-walk-profile',8);
+        player.scale.x = -3;
+        anim = player.animations.add('walk');
+        anim.play(10,true);
+    }
+
+    // Test if directions are being held
+    held_directions();
+}
+
+function preload() {
+    game.load.image('tile', 'images/tile_aqua.png');
+	game.load.spritesheet('link-walk-up', 'images/link-walk-up.png', 17, 24);
+    game.load.spritesheet('link-walk-down', 'images/link-walk-down.png', 17, 24);
+    game.load.spritesheet('link-walk-profile', 'images/link-walk-profile.png', 24, 24);
+}
+
+function create() {
+	game.stage.backgroundColor = "000000";
+    game.world.setBounds(0,0,gameWidth * 4,gameHeight * 4);
+	//game.add.text(32, 32, 'An Empty Game ;)', { fill: 'white' });
+
+    draw_player();
+    draw_enemy(100,100);
+    draw_wall();
+
+    // Enable physics on character
+    game.physics.enable(player);
+    player.body.setSize = (player.width,player.height);
+    player.body.collideWorldBounds = true;
+
+    // Camera follow
+    game.camera.follow(player);
+}
+
+// Constantly check these things
+function update() {
+    //game.physics.arcade.collide(player,enemy[0]);
+    check_vertical(); // Check for vertical movement
+    check_horizontal(); // Check for horizontal movement
+    check_sword();  // Check if sword is being swung
+    //check_face_direction(); // Check the debug face direction
+    check_enemy_overlap();  // Check if sword overlaps with enemy
+    animate_direction(); // Animate directions only when directions are held
+
+    //collision
+    game.physics.arcade.collide(player, wallSprite);
+    game.physics.arcade.collide(player, wallSprite2);
+
+    // Allowing debugging
+    //game.debug.cameraInfo(game.camera, 32, 32);
+    //game.debug.body(player);
+    //game.debug.body(enemy[0]);
+}
+</script>
