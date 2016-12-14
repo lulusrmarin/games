@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+<script>
+// Game Begin
+
+var gameWidth = 800;
+var gameHeight = 500;
+
+var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
+
+function preload() {
+	game.load.spritesheet('link', 'images/link-walk-profile.png', 24, 24);
+}
+
+function create() {
+    // Start character animation
+    chara = game.add.sprite(gameWidth / 2, gameHeight /2, 'link', 8);
+    chara.scale.setTo(2,2);
+    anim = chara.animations.add('walk');
+    anim.play(10, true);
+}
+
+function update() {
+
+}
+</script>
