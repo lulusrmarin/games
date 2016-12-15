@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/phaser2.6.1.min.js"></script>
+</head>
+<body>
+<script>
+// Draw a rectangle
+function draw_rect(posX = 0,posY = 0, color = 0xFFFFFF, width = 50, height = 50, visible = false) {
+    var rect = game.add.graphics(posX, posY); // New shape object
+    rect.beginFill(color, 1); // Fill in object
+    rect.drawRect(posX, posY , width, height); // Create at positions x and y and draw to width/height
+    rect.visible = visible; // Visible or not, often created invisible to draw texture to sprite
+        // Prevents drawing twice, in other words
+    return rect; // Return the shape as an object
+}
+
+var gameWidth = 800;    // Width of game
+var gameHeight = 500;   // Height of game
+// Game Begin
+var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
+
+function preload() {
+	//game.load.image('window', 'images/blue_panel.png');
+    game.load.image('window_corner', 'images/window_lcorner.png');
+    game.load.image('window_hrepeat', 'images/window_hrepeat.png');
+    game.load.image('window_vrepeat', 'images/window_vrepeat.png');
+}
+
+function draw_window(x,y,width,height) {
+    // Top
+	ulcorner = game.add.sprite(x, y, 'window_corner');
+    upperRepeat = game.add.tileSprite(x + ulcorner.width, y, width, ulcorner.height,'window_hrepeat');
+    urcorner = game.add.sprite(x + upperRepeat.width + 7, y, 'window_corner');
+    urcorner.anchor.setTo(1,0);
+    urcorner.scale.x = -1;
+
+    // Center
+    leftRepeat = game.add.tileSprite(x, y + ulcorner.height, 7, height,'window_vrepeat');
+    rightRepeat = game.add.tileSprite(x + leftRepeat.width + upperRepeat.width,
+        y + urcorner.height, 7, height,'window_vrepeat');
+    rect = draw_rect(0, 0, 0x1ea7e1, width + 2 , height , false);
+    center = game.add.sprite(x + leftRepeat.width, y + upperRepeat.height, rect.generateTexture());
+
+
+    //Bottom
+	blcorner = game.add.sprite(x, y + leftRepeat.height + 5, 'window_corner');
+    blcorner.scale.y = -1;
+    blcorner.anchor.setTo(0,1);
+    bottomRepeat = game.add.tileSprite(x + ulcorner.width, y + upperRepeat.height + leftRepeat.height,
+        width, ulcorner.height,'window_hrepeat');
+    bottomRepeat.anchor.setTo(0,1);
+    bottomRepeat.scale.y = -1;
+    brcorner = game.add.sprite(x + ulcorner.width + upperRepeat.width,
+        y + urcorner.height + rightRepeat.height, 'window_corner');
+    brcorner.anchor.setTo(1,1);
+    brcorner.scale.y = -1;
+    brcorner.scale.x = -1;
+}
+
+function create() {
+	game.stage.backgroundColor = "000000";
+    draw_window(5,5,200,400);
+}
+
+function update() {
+
+}
+</script>
