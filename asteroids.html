@@ -5,6 +5,11 @@
 </head>
 <body>
 <script>
+// Credits:
+// Phaser Library
+// Open Game Art Lasers: Bonsaiheldin
+// Open Game Art Ship:
+// Free Sounds laser sound: Taira Komori
 
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
@@ -12,6 +17,7 @@ function preload() {
 
     game.load.image('bullet', 'images/bullet.png');
     game.load.image('ship', 'images/ship.png');
+    game.load.audio('pew', 'sounds/pew.mp3');
 
 }
 
@@ -51,8 +57,11 @@ function create() {
 
     fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
 
+    pew = game.add.audio('pew',1,true);
+
 }
 
+var soundEnabled = true;
 function update() {
 
     if (cursors.up.isDown)
@@ -80,6 +89,14 @@ function update() {
     if (fireButton.isDown)
     {
         weapon.fire();
+        if(soundEnabled == true) {
+            soundEnabled = false;
+            pew.play();
+        }
+    }
+    else {
+        soundEnabled = true;
+        pew.stop();
     }
 
     game.world.wrap(sprite, 16);
