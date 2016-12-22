@@ -40,7 +40,7 @@ function draw_random_circle_sprite() {
 }
 
 // Game Begin
-var game = new Phaser.Game(window.screen.availWidth * window.devicePixelRatio, window.screen.availHeight * window.devicePixelRatio, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
+var game = new Phaser.Game( window.innerWidth ,  window.innerHeight , Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
 
 function preload() {
 
