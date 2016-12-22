@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/phaser.min.js"></script>
+<style>
+    body {
+        margin: 0;
+    }
+    canvas {
+    border: solid 1px black;
+    margin-left: auto;
+    margin-right: auto;
+    }
+</style>
+</head>
+<body>
+<script>
+function draw_filled_circle(color,x,y,rad) {
+	var circle = game.add.graphics(0, 0);
+	circle = circle.beginFill(color, 1);
+    circle = circle.drawCircle(x, y, rad);
+	return circle;
+}
+
+function draw_random_circle_sprite() {
+    randRad = game.rnd.integerInRange(10, 120);
+    circle = draw_filled_circle(0xffffff,0,0,randRad);
+    circle.visible = false;
+
+    randX = game.rnd.integerInRange(0, window.screen.availWidth * window.devicePixelRatio - (randRad * 2));
+    randY = game.rnd.integerInRange(0, window.screen.availHeight * window.devicePixelRatio - (randRad * 2));
+    circleSprite = game.add.sprite(randX,randY,circle.generateTexture());
+
+    circleSprite.inputEnabled = true;
+    circleSprite.input.useHandCursor = true;
+    circleSprite.events.onInputDown.add(function(){
+        circleSprite.destroy();
+        draw_random_circle_sprite();
+    }, this);
+}
+
+// Game Begin
+var game = new Phaser.Game(window.screen.availWidth * window.devicePixelRatio, window.screen.availHeight * window.devicePixelRatio, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
+
+function preload() {
+
+}
+
+function create() {
+	game.stage.backgroundColor = "000000";
+	//game.add.text(32, 32, 'An Empty Game ;)', { fill: 'white' });
+    draw_random_circle_sprite();
+}
+
+function update() {
+
+}
+</script>
