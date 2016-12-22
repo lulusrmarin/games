@@ -27,8 +27,8 @@ function draw_random_circle_sprite() {
     circle = draw_filled_circle(0xffffff,0,0,randRad);
     circle.visible = false;
 
-    randX = game.rnd.integerInRange(0, window.screen.availWidth * window.devicePixelRatio - (randRad * 2));
-    randY = game.rnd.integerInRange(0, window.screen.availHeight * window.devicePixelRatio - (randRad * 2));
+    randX = game.rnd.integerInRange(0, window.innerWidth - (randRad * 2));
+    randY = game.rnd.integerInRange(0, window.innerHeight - (randRad * 2));
     circleSprite = game.add.sprite(randX,randY,circle.generateTexture());
 
     circleSprite.inputEnabled = true;
